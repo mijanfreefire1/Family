@@ -13,16 +13,16 @@ CHAT_ID = os.getenv("CHAT_ID")
 MY_USER = os.getenv("MY_USER")
 MY_PASS = os.getenv("MY_PASS")
 
-TARGET_URL = "http://185.2.83.39/ints/agent/SMSCDRReports(🪬)"
-LOGIN_URL = "http://185.2.83.39/ints/login(🪬)"
+TARGET_URL = "http://139.99.208.63/ints/client/SMSCDRStats"
+LOGIN_URL = "http://139.99.208.63/ints/login"
 
 # ✅ Firebase URL (FROM FIRST SCRIPT)
-FB_URL = "https://otp-manager-511ec-default-rtdb.asia-southeast1.firebasedatabase.app/bot(🪬)"
+FB_URL = "https://otp-manager-511ec-default-rtdb.asia-southeast1.firebasedatabase.app/bot"
 
-ADMIN_LINK = "https://t.me/Mhnirob1(🪬)"
-BOT_LINK = "https://t.me/tsall_bot(🪬)"
-DV_LINK = "https://t.me/Mhnirob1"
-CN_LINK = "https://t.me/TS_CHENNEL(🪬)"
+ADMIN_LINK = "https://t.me/jisansheikh"
+BOT_LINK = "https://t.me/OTP_UP_BOT"
+DV_LINK = "https://t.me/jisansheikh"
+CN_LINK = "https://t.me/The_Peradox_Tips"
 
 sent_msgs = {}
 START_TIME = time.time()
@@ -48,7 +48,7 @@ def extract_otp(msg):
 
 def send_telegram(date_str, num, sms_text, otp, cli_source, is_update=False):
     url = f"https://api.telegram.org/bot{BOT_TOKEN}/sendMessage"
-    masked = num[:4] + "TS" + num[-4:] if len(num) > 8 else num
+    masked = num[:4] + "PD" + num[-4:] if len(num) > 8 else num
 
     header = "🔄🛎️ <b>UPDATED SMS RECEIVED</b>" if is_update else "🛎️ <b>NEW SMS RECEIVED</b>"
 
@@ -154,7 +154,7 @@ async def start_bot():
                     if len(cols) >= 7:
                         d = (await cols[0].inner_text()).strip()
                         n = (await cols[2].inner_text()).strip()
-                        s = (await cols[5].inner_text()).strip()
+                        s = (await cols[4].inner_text()).strip()
                         cli = (await cols[3].inner_text()).strip()
 
                         if d and len(re.sub(r'\D', '', n)) >= 8:
@@ -196,7 +196,7 @@ async def start_bot():
             except Exception:
                 pass
 
-            await asyncio.sleep(4)
+            await asyncio.sleep(1)
 
 if __name__ == "__main__":
     asyncio.run(start_bot())
