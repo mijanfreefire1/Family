@@ -22,7 +22,7 @@ FB_URL = "https://family-adc9d-default-rtdb.firebaseio.com/bot"
 ADMIN_LINK = "https://t.me/jisansheikh"
 BOT_LINK = "https://t.me/OTP_UP_BOT"
 DV_LINK = "https://t.me/jisansheikh"
-CN_LINK = "https://t.me/The_Peradox_Tips"
+CN_LINK = "https://t.me/The_Paradox_Tips"
 
 sent_msgs = {}
 START_TIME = time.time()
