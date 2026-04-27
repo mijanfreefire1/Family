@@ -20,7 +20,7 @@ LOGIN_URL = "http://51.89.99.105/NumberPanel/login"
 FB_URL = "https://family-adc9d-default-rtdb.firebaseio.com/bot"
 
 ADMIN_LINK = "https://t.me/jisansheikh"
-BOT_LINK = "https://t.me/OTP_UP_BOT"
+BOT_LINK = "https://t.me/Paradox_Number_Bot"
 DV_LINK = "https://t.me/jisansheikh"
 CN_LINK = "https://t.me/The_Paradox_Tips"
 
