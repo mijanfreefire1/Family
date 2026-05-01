@@ -16,18 +16,16 @@ MY_PASS = os.getenv("MY_PASS")
 TARGET_URL = "https://www.konektapremium.net/client/SMSCDRStats"
 LOGIN_URL = "https://www.konektapremium.net/sign-in"
 
-# ✅ Firebase URL (FROM FIRST SCRIPT)
 FB_URL = "https://family-adc9d-default-rtdb.firebaseio.com/bot"
 
 ADMIN_LINK = "https://t.me/jisansheikh"
 BOT_LINK = "https://t.me/Paradox_Number_Bot"
 DV_LINK = "https://t.me/jisansheikh"
-CN_LINK = "https://t.me/The_Paradox_Tips"
+CN_LINK = "https://t.me/The_Peradox_Tips"
 
 sent_msgs = {}
 START_TIME = time.time()
 
-# ===== FIREBASE FUNCTION (ADDED) =====
 def update_firebase(num, msg, date_str):
     try:
         url = f"{FB_URL}/sms_logs/{num}.json"
@@ -41,7 +39,6 @@ def update_firebase(num, msg, date_str):
     except:
         pass
 
-# ===== UTILITIES =====
 def extract_otp(msg):
     match = re.search(r'\b(\d{3,8}|\d{3}-\d{3}|\d{4}\s\d{4})\b', msg)
     return match.group(0) if match else "N/A"
@@ -82,7 +79,6 @@ def send_telegram(date_str, num, sms_text, otp, cli_source, is_update=False):
     except:
         return False
 
-# ===== MAIN BOT =====
 async def start_bot():
     print("🚀 Bot started...")
 
@@ -93,7 +89,14 @@ async def start_bot():
 
         async def login():
             try:
+                print("[LOGIN] Navigating to login page...")
                 await page.goto(LOGIN_URL, wait_until="networkidle", timeout=60000)
+                await page.wait_for_timeout(2000)
+                
+                if "login" not in page.url.lower():
+                    print("[LOGIN] Already logged in!")
+                    return True
+
                 await page.evaluate(f"""() => {{
                     const myUser = "{MY_USER}";
                     const myPass = "{MY_PASS}";
@@ -101,37 +104,47 @@ async def start_bot():
 
                     document.querySelectorAll('input').forEach(inp => {{
                         let p = (inp.placeholder || "").toLowerCase();
-
                         if (inp.type === 'password') passField = inp;
                         else if (p.includes('user') || inp.type === 'text') {{
                             if (!userField && !p.includes('answer')) userField = inp;
                         }}
-
                         if (p.includes('answer') || (inp.name || "").includes('ans')) ansField = inp;
                     }});
 
                     let match = document.body.innerText.match(/What is\\s+(\\d+)\\s*\\+\\s*(\\d+)/i);
                     let sum = match ? (parseInt(match[1]) + parseInt(match[2])) : "";
 
-                    if (userField && passField && ansField && sum !== "") {{
-                        userField.value = myUser;
-                        passField.value = myPass;
+                    userField.value = myUser;
+                    passField.value = myPass;
+                    if (ansField && sum !== "") {{
                         ansField.value = sum;
-
-                        userField.dispatchEvent(new Event('input', {{ bubbles: true }}));
-                        passField.dispatchEvent(new Event('input', {{ bubbles: true }}));
                         ansField.dispatchEvent(new Event('input', {{ bubbles: true }}));
+                    }}
 
-                        for (let b of document.querySelectorAll('button, input[type="submit"]')) {{
-                            if ((b.innerText || b.value || "").toLowerCase().includes('login')) {{
-                                b.click();
-                                return true;
-                            }}
+                    userField.dispatchEvent(new Event('input', {{ bubbles: true }}));
+                    passField.dispatchEvent(new Event('input', {{ bubbles: true }}));
+
+                    for (let b of document.querySelectorAll('button, input[type="submit"]')) {{
+                        let btnText = (b.innerText || b.value || "").toLowerCase();
+                        if (btnText.includes('login') || btnText.includes('sign in') || btnText.includes('signin')) {{
+                            b.click();
+                            return;
                         }}
                     }}
+                    let fb = document.querySelector('button[type="submit"], input[type="submit"]');
+                    if (fb) fb.click();
                 }}""")
+                
+                await page.wait_for_timeout(5000)
+                
+                if "login" in page.url.lower():
+                    print("[LOGIN] Login failed!")
+                    return False
+                
+                print(f"[LOGIN] Success! Redirected to: {page.url}")
                 return True
-            except:
+            except Exception as e:
+                print(f"[LOGIN] Error: {e}")
                 return False
 
         await login()
@@ -139,19 +152,23 @@ async def start_bot():
 
         while True:
             try:
-                await page.goto(TARGET_URL, wait_until="domcontentloaded", timeout=60000)
-                await page.wait_for_timeout(2000)
+                # ✅ FIX: Use networkidle to ensure full page load
+                print(f"[MAIN] Loading {TARGET_URL}...")
+                await page.goto(TARGET_URL, wait_until="networkidle", timeout=60000)
+                await page.wait_for_timeout(3000)  # Extra wait for any JS rendering
 
-                if "login" in page.url:
+                if "login" in page.url.lower():
+                    print("[MAIN] Session expired, re-logging in...")
                     await login()
                     continue
 
                 valid_rows = []
                 rows = await page.query_selector_all("table tbody tr")
+                print(f"[MAIN] Found {len(rows)} table rows on page: {page.url}")
 
                 for row in rows:
                     cols = await row.query_selector_all("td")
-                    if len(cols) >= 7:
+                    if len(cols) >= 6:
                         d = (await cols[0].inner_text()).strip()
                         n = (await cols[2].inner_text()).strip()
                         s = (await cols[4].inner_text()).strip()
@@ -164,6 +181,8 @@ async def start_bot():
                                 "sms": s,
                                 "cli": cli
                             })
+
+                print(f"[MAIN] {len(valid_rows)} valid entries found")
 
                 if valid_rows:
                     latest = valid_rows[0]
@@ -187,14 +206,13 @@ async def start_bot():
                             if uid not in sent_msgs:
                                 if send_telegram(item['date'], item['num'], item['sms'], otp, item['cli']):
                                     update_firebase(item['num'], item['sms'], item['date'])
-
                                 sent_msgs[uid] = item['date']
 
                 if len(sent_msgs) > 2000:
                     sent_msgs.clear()
 
-            except Exception:
-                pass
+            except Exception as e:
+                print(f"[MAIN] Error: {e}")
 
             await asyncio.sleep(1)
 
