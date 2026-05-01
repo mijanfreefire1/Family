@@ -13,8 +13,8 @@ CHAT_ID = os.getenv("CHAT_ID")
 MY_USER = os.getenv("MY_USER")
 MY_PASS = os.getenv("MY_PASS")
 
-TARGET_URL = "http://51.89.99.105/NumberPanel/client/SMSCDRStats"
-LOGIN_URL = "http://51.89.99.105/NumberPanel/login"
+TARGET_URL = "https://www.konektapremium.net/client/SMSCDRStats"
+LOGIN_URL = "https://www.konektapremium.net/sign-in"
 
 # ✅ Firebase URL (FROM FIRST SCRIPT)
 FB_URL = "https://family-adc9d-default-rtdb.firebaseio.com/bot"
